@@ -310,6 +310,14 @@ export class DefaultConfig implements Config {
     return 0.5;
   }
 
+  unprotectedDefenseBonus(): number {
+    return 0.5;
+  }
+
+  unprotectedSpeedBonus(): number {
+    return 0.5;
+  }
+
   playerTeams(): TeamCountConfig {
     return this._gameConfig.playerTeams ?? 0;
   }
