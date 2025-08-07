@@ -10,6 +10,7 @@
   → Each port you own now increases the gold per trade, counterbalancing the cap.
 - MIRVs have been nerfed
   → Expect less devastating multi-warhead nukes. Land in-between the fallout can be more quickly conquered.
+- Tiles without nearby defense posts are conquered faster, while tiles around a defense post are tougher to take.
 - Warships prioritize enemy transport ships over warships. Reload instantly after shooting a transport ship. (Evan)
 - Building discounts can only be used one time.
 - AI nukes now avoid SAM launchers
