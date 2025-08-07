@@ -291,15 +291,23 @@ export class DefaultConfig implements Config {
   }
 
   defensePostRange(): number {
-    return 30;
+    return 15;
   }
 
   defensePostDefenseBonus(): number {
-    return 5;
+    return 8;
   }
 
   defensePostSpeedBonus(): number {
-    return 3;
+    return 4;
+  }
+
+  unprotectedDefenseBonus(): number {
+    return 0.5;
+  }
+
+  unprotectedSpeedBonus(): number {
+    return 0.5;
   }
 
   playerTeams(): TeamCountConfig {
@@ -584,19 +592,24 @@ export class DefaultConfig implements Config {
       default:
         throw new Error(`terrain type ${type} not supported`);
     }
-    if (defender.isPlayer()) {
-      for (const dp of gm.nearbyUnits(
-        tileToConquer,
-        gm.config().defensePostRange(),
-        UnitType.DefensePost,
-      )) {
-        if (dp.unit.owner() === defender) {
-          mag *= this.defensePostDefenseBonus();
-          speed *= this.defensePostSpeedBonus();
-          break;
-        }
+    let defenseMult = this.unprotectedDefenseBonus();
+    let speedMult = this.unprotectedSpeedBonus();
+    for (const dp of gm.nearbyUnits(
+      tileToConquer,
+      gm.config().defensePostRange(),
+      UnitType.DefensePost,
+    )) {
+      const owner = dp.unit.owner();
+      if (
+        (defender.isPlayer() && owner === defender) ||
+        (!defender.isPlayer() && owner !== attacker)
+      ) {
+        defenseMult = this.defensePostDefenseBonus();
+        speedMult = this.defensePostSpeedBonus();
+        break;
       }
     }
+    mag *= defenseMult;
 
     if (gm.hasFallout(tileToConquer)) {
       const falloutRatio = gm.numTilesWithFallout() / gm.numLandTiles();
@@ -641,6 +654,7 @@ export class DefaultConfig implements Config {
         tilesPerTickUsed:
           within(defender.troops() / (5 * attackTroops), 0.2, 1.5) *
           speed *
+          speedMult *
           largeSpeedMalus *
           (defender.isTraitor() ? this.traitorSpeedDebuff() : 1),
       };
@@ -649,11 +663,9 @@ export class DefaultConfig implements Config {
         attackerTroopLoss:
           attacker.type() === PlayerType.Bot ? mag / 10 : mag / 5,
         defenderTroopLoss: 0,
-        tilesPerTickUsed: within(
-          (2000 * Math.max(10, speed)) / attackTroops,
-          5,
-          100,
-        ),
+        tilesPerTickUsed:
+          within((2000 * Math.max(10, speed)) / attackTroops, 5, 100) *
+          speedMult,
       };
     }
   }
