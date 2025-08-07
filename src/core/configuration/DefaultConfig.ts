@@ -302,6 +302,14 @@ export class DefaultConfig implements Config {
     return 3;
   }
 
+  unprotectedDefenseBonus(): number {
+    return 0.5;
+  }
+
+  unprotectedSpeedBonus(): number {
+    return 0.5;
+  }
+
   playerTeams(): TeamCountConfig {
     return this._gameConfig.playerTeams ?? 0;
   }
@@ -584,6 +592,7 @@ export class DefaultConfig implements Config {
       default:
         throw new Error(`terrain type ${type} not supported`);
     }
+    let hasDefensePost = false;
     if (defender.isPlayer()) {
       for (const dp of gm.nearbyUnits(
         tileToConquer,
@@ -593,9 +602,14 @@ export class DefaultConfig implements Config {
         if (dp.unit.owner() === defender) {
           mag *= this.defensePostDefenseBonus();
           speed *= this.defensePostSpeedBonus();
+          hasDefensePost = true;
           break;
         }
       }
+    }
+    if (!hasDefensePost) {
+      mag *= this.unprotectedDefenseBonus();
+      speed *= this.unprotectedSpeedBonus();
     }
 
     if (gm.hasFallout(tileToConquer)) {
