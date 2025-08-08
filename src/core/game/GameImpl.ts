@@ -31,7 +31,7 @@ import {
   UnitInfo,
   UnitType,
 } from "./Game";
-import { GameMap, TileRef, TileUpdate } from "./GameMap";
+import { euclDistFN, GameMap, TileRef, TileUpdate } from "./GameMap";
 import { GameUpdate, GameUpdateType } from "./GameUpdates";
 import { PlayerImpl } from "./PlayerImpl";
 import { RailNetwork } from "./RailNetwork";
@@ -201,6 +201,17 @@ export class GameImpl implements Game {
       return;
     }
     this._map.setFallout(tile, value);
+    this.addUpdate({
+      type: GameUpdateType.Tile,
+      update: this.toTileUpdate(tile),
+    });
+  }
+
+  private setDefenseBonus(tile: TileRef, value: boolean) {
+    if (this._map.hasDefenseBonus(tile) === value) {
+      return;
+    }
+    this._map.setDefenseBonus(tile, value);
     this.addUpdate({
       type: GameUpdateType.Tile,
       update: this.toTileUpdate(tile),
@@ -514,6 +525,7 @@ export class GameImpl implements Game {
     owner._lastTileChange = this._ticks;
     this.updateBorders(tile);
     this._map.setFallout(tile, false);
+    this.updateDefenseBonusAround(tile);
     this.addUpdate({
       type: GameUpdateType.Tile,
       update: this.toTileUpdate(tile),
@@ -535,6 +547,7 @@ export class GameImpl implements Game {
 
     this._map.setOwnerID(tile, 0);
     this.updateBorders(tile);
+    this.updateDefenseBonusAround(tile);
     this.addUpdate({
       type: GameUpdateType.Tile,
       update: this.toTileUpdate(tile),
@@ -825,6 +838,9 @@ export class GameImpl implements Game {
   hasFallout(ref: TileRef): boolean {
     return this._map.hasFallout(ref);
   }
+  hasDefenseBonus(ref: TileRef): boolean {
+    return this._map.hasDefenseBonus(ref);
+  }
   isBorder(ref: TileRef): boolean {
     return this._map.isBorder(ref);
   }
@@ -869,6 +885,22 @@ export class GameImpl implements Game {
   }
   numTilesWithFallout(): number {
     return this._map.numTilesWithFallout();
+  }
+  updateDefenseBonusAround(tile: TileRef): void {
+    const range = this.config().defensePostRange();
+    const tiles = this.bfs(tile, euclDistFN(tile, range));
+    tiles.forEach((t) => {
+      const owner = this.owner(t);
+      if (
+        owner.isPlayer() &&
+        this.isBorder(t) &&
+        this.hasUnitNearby(t, range, UnitType.DefensePost, owner.id())
+      ) {
+        this.setDefenseBonus(t, true);
+      } else {
+        this.setDefenseBonus(t, false);
+      }
+    });
   }
   stats(): Stats {
     return this._stats;
