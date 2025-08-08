@@ -2,8 +2,8 @@ import { PriorityQueue } from "@datastructures-js/priority-queue";
 import { Colord } from "colord";
 import { Theme } from "../../../core/configuration/Config";
 import { EventBus } from "../../../core/EventBus";
-import { Cell, PlayerType, UnitType } from "../../../core/game/Game";
-import { euclDistFN, TileRef } from "../../../core/game/GameMap";
+import { Cell, PlayerType } from "../../../core/game/Game";
+import { TileRef, euclDistFN } from "../../../core/game/GameMap";
 import { GameUpdateType } from "../../../core/game/GameUpdates";
 import { GameView, PlayerView } from "../../../core/game/GameView";
 import { UserSettings } from "../../../core/game/UserSettings";
@@ -81,23 +81,6 @@ export class TerritoryLayer implements Layer {
     }
     this.game.recentlyUpdatedTiles().forEach((t) => this.enqueueTile(t));
     const updates = this.game.updatesSinceLastTick();
-    const unitUpdates = updates !== null ? updates[GameUpdateType.Unit] : [];
-    unitUpdates.forEach((update) => {
-      if (update.unitType === UnitType.DefensePost) {
-        const tile = update.pos;
-        this.game
-          .bfs(tile, euclDistFN(tile, this.game.config().defensePostRange()))
-          .forEach((t) => {
-            if (
-              this.game.isBorder(t) &&
-              (this.game.ownerID(t) === update.ownerID ||
-                this.game.ownerID(t) === update.lastOwnerID)
-            ) {
-              this.enqueueTile(t);
-            }
-          });
-      }
-    });
 
     // Detect alliance mutations
     const myPlayer = this.game.myPlayer();
@@ -427,14 +410,7 @@ export class TerritoryLayer implements Layer {
         }
         this.paintTile(this.alternativeImageData, tile, alternativeColor, 255);
       }
-      if (
-        this.game.hasUnitNearby(
-          tile,
-          this.game.config().defensePostRange(),
-          UnitType.DefensePost,
-          owner.id(),
-        )
-      ) {
+      if (this.game.hasDefenseBonus(tile)) {
         const borderColors = this.theme.defendedBorderColors(owner);
         const x = this.game.x(tile);
         const y = this.game.y(tile);

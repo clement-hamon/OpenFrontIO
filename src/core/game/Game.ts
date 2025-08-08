@@ -678,6 +678,7 @@ export interface Game extends GameMap {
   ): Array<{ unit: Unit; distSquared: number }>;
 
   addExecution(...exec: Execution[]): void;
+  updateDefenseBonusAround(tile: TileRef): void;
   displayMessage(
     message: string,
     type: MessageType,

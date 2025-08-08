@@ -53,8 +53,10 @@ export class DefensePostExecution implements Execution {
         return;
       }
       this.post = this.player.buildUnit(UnitType.DefensePost, spawnTile, {});
+      this.mg.updateDefenseBonusAround(this.post.tile());
     }
     if (!this.post.isActive()) {
+      this.mg.updateDefenseBonusAround(this.post.tile());
       this.active = false;
       return;
     }

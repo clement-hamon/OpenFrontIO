@@ -633,6 +633,12 @@ export class GameView implements GameMap {
   setFallout(ref: TileRef, value: boolean): void {
     return this._map.setFallout(ref, value);
   }
+  hasDefenseBonus(ref: TileRef): boolean {
+    return this._map.hasDefenseBonus(ref);
+  }
+  setDefenseBonus(ref: TileRef, value: boolean): void {
+    return this._map.setDefenseBonus(ref, value);
+  }
   isBorder(ref: TileRef): boolean {
     return this._map.isBorder(ref);
   }
@@ -677,6 +683,9 @@ export class GameView implements GameMap {
   }
   numTilesWithFallout(): number {
     return this._map.numTilesWithFallout();
+  }
+  updateDefenseBonusAround(_tile: TileRef): void {
+    /* no-op on client */
   }
   gameID(): GameID {
     return this._gameID;
